@@ -183,8 +183,31 @@ namespace _MYS1_Proyecto_G1
                 experiment.ConfidenceLevel = ExperimentConfidenceLevelType.Point90;
                 experiment.LowerPercentile = 5;
                 experiment.UpperPercentile = 95;
-                model.Facility.IntelligentObjects["aeropuerto"].Properties["InitialCapacity"].Value = "69";
-                model.Facility.IntelligentObjects.CreateObject("Server", new FacilityLocation(0, 0, 0));
+                //model.Facility.IntelligentObjects["aeropuerto"].Properties["InitialCapacity"].Value = "69";
+                int contador = 0;
+                foreach (var air in listaAeropuertos)
+                {
+
+                    IIntelligentObject nuevo = model.Facility.IntelligentObjects.CreateObject("Server", new FacilityLocation(0, 0, contador * 10));
+                    nuevo.Properties[8].Value = air.nombre;
+
+
+                    //if (contador == 0)
+                    //{
+
+                    //    model.Facility.IntelligentObjects["DefaultEntity"].Properties["Name"].Value = air.nombre;
+
+                    //}
+                    //else
+                    //{
+                    //    model.Facility.IntelligentObjects["Server"+(contador+1)].Properties["Name"].Value = air.nombre;
+                    //}
+
+                    //model.Facility.IntelligentObjects[2].Properties["name"].Value = air.nombre;
+                    contador = contador +1 ;
+                }
+
+                //model.Facility.IntelligentObjects.CreateObject("Server", new FacilityLocation(0, 0, 0));
 
 
                 /*
@@ -195,8 +218,9 @@ namespace _MYS1_Proyecto_G1
                 experiment.ReplicationEnded += new EventHandler<ReplicationEndedEventArgs>(experiment_ReplicationEnded);
                 */
                 // Run Experiment, will call event handler methods when finished etc.
-                experiment.RunAsync();
                 SimioProjectFactory.SaveProject(currentProject, "Nuevo.spfx", out warnings);
+                experiment.RunAsync();
+                
             }
             else
             {
