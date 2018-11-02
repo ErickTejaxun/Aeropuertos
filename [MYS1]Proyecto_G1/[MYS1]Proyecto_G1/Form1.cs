@@ -20,6 +20,11 @@ namespace _MYS1_Proyecto_G1
         public int TiempoServicioGeneral;
         public List<aeropuerto> listaAeropuertos = new List<aeropuerto>(); // ubicaciones.
         public List<vuelo> listaVuelos = new List<vuelo>(); // Rutas
+        ISimioProject currentProject;
+        String _ProjectPathAndFile = "C:\\Users\\Carlos\\Downloads\\Proyecto\\modelo.spfx";
+        //ISimioProject currentProject;
+        IModel currentModel;
+        IExperiment currentExperiment;
 
         public Form1()
         {
@@ -114,7 +119,7 @@ namespace _MYS1_Proyecto_G1
         {
             string textoArchivo = System.IO.File.ReadAllText(@path);
             String[] lineas = textoArchivo.Split('\n');
-            for(int x = 1; x < lineas.Length-1; x ++)            
+            for (int x = 1; x < lineas.Length - 1; x++)
             {
                 String[] datos = lineas[x].Split(',');
                 /*
@@ -156,15 +161,91 @@ namespace _MYS1_Proyecto_G1
         {
             if (listaAeropuertos.Count > 0 && listaVuelos.Count > 0)
             {
-                ISimioProject _simioproject;
+                // ISimioProject _simioproject;
                 string _projectPathAndFile = getPathActual();
-                MessageBox.Show(_projectPathAndFile);
+                //MessageBox.Show(_projectPathAndFile);
+                string[] warnings;
+                currentProject = SimioProjectFactory.LoadProject("Model.spfx", out warnings);
+
+                //ISimioProject project = SimioProjectFactory.LoadProject("Test.spfx", out warnings);
+                IModel model = currentProject.Models["Model"];
+
+                IExperiment experiment = model.Experiments.Create("Experiment");
+
+                // Setup the experiment (optional)
+                // Specify run times.
+                //string experiment_ScenarioEnded = "2";
+                double runtime = 2;
+                IRunSetup setup = experiment.RunSetup;
+                setup.StartingTime = new DateTime(2010, 10, 01);
+                setup.WarmupPeriod = TimeSpan.FromHours(0);
+                setup.EndingTime = experiment.RunSetup.StartingTime + TimeSpan.FromDays(runtime);
+                experiment.ConfidenceLevel = ExperimentConfidenceLevelType.Point90;
+                experiment.LowerPercentile = 5;
+                experiment.UpperPercentile = 95;
+                model.Facility.IntelligentObjects["aeropuerto"].Properties["InitialCapacity"].Value = "69";
+                model.Facility.IntelligentObjects.CreateObject("Server", new FacilityLocation(0, 0, 0));
+
+
+                /*
+                // Add event handler for events from experiment
+                experiment.ScenarioEnded += new EventHandler<ScenarioEndedEventArgs>(experiment_ScenarioEnded);
+                experiment.RunCompleted += new EventHandler<RunCompletedEventArgs>(experiment_RunCompleted);
+                experiment.RunProgressChanged += new EventHandler<RunProgressChangedEventArgs>(experiment_RunProgressChanged);
+                experiment.ReplicationEnded += new EventHandler<ReplicationEndedEventArgs>(experiment_ReplicationEnded);
+                */
+                // Run Experiment, will call event handler methods when finished etc.
+                experiment.RunAsync();
+                SimioProjectFactory.SaveProject(currentProject, "Nuevo.spfx", out warnings);
             }
             else
             {
                 MessageBox.Show("Debe cargar ambos archivos.");
             }
         }
+
+        public void SetProject(string project, string model, string experiment)
+        {
+            // Set extension folder path
+            //SimioProjectFactory.SetExtensionsPath(Directory.GetCurrentDirectory().ToString());
+
+            // Open project
+            string[] warnings;
+            currentProject = SimioProjectFactory.LoadProject(project, out warnings);
+            if (model != null || model != "")
+            {
+                SetModel(model);
+                SetExperiment(experiment);
+                //return currentProject;
+            }
+            //return null;
+        }
+
+        public ISimioProject GetCurrentProject()
+        {
+            return currentProject;
+        }
+
+        public void SetModel(string model)
+        {
+            if (currentProject != null)
+            {
+                currentModel = currentProject.Models[model];
+                //return currentModel;
+            }
+            //return null;
+        }
+
+        public IModel GetCurrentModel()
+        {
+            return currentModel;
+        }
+
+        public void SetExperiment(string experiment)
+        {
+            currentExperiment = currentModel.Experiments[experiment];
+        }
+
     }
 
     public class aeropuerto
@@ -172,7 +253,7 @@ namespace _MYS1_Proyecto_G1
         public string id, nombre, tipoFalla;
         public int x, y, z, cantEntreFallas, tiempoReparacion
             , capacidadPista, tiempoPersonas, tiempoAbordajeDespegue;
-        
+
         public aeropuerto(String id, String nombre, int x, int y, int z, String tipoFalla, int cantEntreFallas, int tiempoReparacion,
             int capacidadPista, int tiempoPersonas, int tiempoAbordajeDespegue)
         {
@@ -205,8 +286,9 @@ namespace _MYS1_Proyecto_G1
             this.virajesMaximo = virajesMaximo;
             this.tiempoMaximo = tiempoMaximo;
         }
+
     }
 
-     
+
 
 }
