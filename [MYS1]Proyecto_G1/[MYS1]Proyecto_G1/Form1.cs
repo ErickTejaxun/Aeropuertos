@@ -185,11 +185,13 @@ namespace _MYS1_Proyecto_G1
                 //model.Facility.IntelligentObjects["aeropuerto"].Properties["InitialCapacity"].Value = "69";
                 int contador = 0;
                 Random rnd = new Random();
+                IFixedObject source = model.Facility.IntelligentObjects["fuente"] as IFixedObject;
+                source.Properties["InterarrivalTime"].Value = "Random.Poisson(60/300)";
                 foreach (var air in listaAeropuertos)
                 {
                     TiempoServicioGeneral = rnd.Next(1, 3);
 
-                    IIntelligentObject aeropuerto = model.Facility.IntelligentObjects.CreateObject("Server", new FacilityLocation(air.x, air.y, air.z));
+                    IFixedObject aeropuerto = model.Facility.IntelligentObjects.CreateObject("Server", new FacilityLocation(air.x, air.y, air.z)) as IFixedObject;
                     aeropuerto.ObjectName = air.nombre;
                     switch (TiempoServicioGeneral)
                     {
@@ -208,14 +210,28 @@ namespace _MYS1_Proyecto_G1
                     aeropuerto.Properties["CountBetweenFailures"].Value = air.cantEntreFallas.ToString();
                     aeropuerto.Properties["TimeToRepair"].Value = air.tiempoReparacion.ToString();
 
-                    IIntelligentObject mezclador = model.Facility.IntelligentObjects.CreateObject("Combiner", new FacilityLocation(air.x, air.y+30, air.z));
+                    IFixedObject mezclador = model.Facility.IntelligentObjects.CreateObject("Combiner", new FacilityLocation(air.x, air.y+30, air.z)) as IFixedObject;
                     String n = air.nombre + "C";
                     mezclador.ObjectName = n;
 
-                    IIntelligentObject sourceAviones = model.Facility.IntelligentObjects.CreateObject("Source", new FacilityLocation(air.x, air.y + 30, air.z));
+                    IFixedObject sourceAviones = model.Facility.IntelligentObjects.CreateObject("Source", new FacilityLocation(air.x, air.y + 30, air.z)) as IFixedObject;
                     n = air.nombre + "S";
                     sourceAviones.ObjectName = n;
-                    sourceAviones.Properties[""];
+                    sourceAviones.Properties["InitialCapacity"].Value = "100";
+
+                    IIntelligentObject pista = model.Facility.IntelligentObjects.CreateObject("Server", new FacilityLocation(air.x, air.y + 30, air.z));
+                    n = air.nombre + "P";
+                    pista.ObjectName = n;
+
+                    pista.Properties["InitialCapacity"].Value = air.capacidadPista.ToString();
+                    ILinkObject path1 = model.Facility.IntelligentObjects.CreateLink("TimePath", source.Nodes[0], aeropuerto.Nodes[0], null) as ILinkObject;
+                    path1.Properties["TravelTime"].Value = air.tiempoAbordajeDespegue.ToString();
+
+
+                    ILinkObject path = model.Facility.IntelligentObjects.CreateLink("Path", sourceAviones.Nodes[0], aeropuerto.Nodes[0], null) as ILinkObject;
+
+
+
 
                     //nuevo.Properties[""].Value = air.tiempoPersonas;
                     //nuevo.Properties[""].Value = air.tiempoAbordajeDespegue;
