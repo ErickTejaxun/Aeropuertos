@@ -20,8 +20,7 @@ namespace _MYS1_Proyecto_G1
         public int TiempoServicioGeneral;
         public List<aeropuerto> listaAeropuertos = new List<aeropuerto>(); // ubicaciones.
         public List<vuelo> listaVuelos = new List<vuelo>(); // Rutas
-        ISimioProject currentProject;
-        String _ProjectPathAndFile = "C:\\Users\\Carlos\\Downloads\\Proyecto\\modelo.spfx";
+        ISimioProject currentProject;        
         //ISimioProject currentProject;
         IModel currentModel;
         IExperiment currentExperiment;
@@ -185,11 +184,43 @@ namespace _MYS1_Proyecto_G1
                 experiment.UpperPercentile = 95;
                 //model.Facility.IntelligentObjects["aeropuerto"].Properties["InitialCapacity"].Value = "69";
                 int contador = 0;
+                Random rnd = new Random();
                 foreach (var air in listaAeropuertos)
                 {
+                    TiempoServicioGeneral = rnd.Next(1, 3);
 
-                    IIntelligentObject nuevo = model.Facility.IntelligentObjects.CreateObject("Server", new FacilityLocation(0, 0, contador * 10));
-                    nuevo.Properties[8].Value = air.nombre;
+                    IIntelligentObject aeropuerto = model.Facility.IntelligentObjects.CreateObject("Server", new FacilityLocation(air.x, air.y, air.z));
+                    aeropuerto.ObjectName = air.nombre;
+                    switch (TiempoServicioGeneral)
+                    {
+                        case 1:
+                            aeropuerto.Properties["ProcessingTime"].Value = "Random.Triangular(35,45,60)";
+                            break;
+                        case 2:
+                            aeropuerto.Properties["ProcessingTime"].Value = "Random.Triangular(30,40,50)";
+                            break;
+                        case 3:
+                            aeropuerto.Properties["ProcessingTime"].Value = "Random.Uniform(30,50)";
+                            break;                            
+                    }
+                    aeropuerto.Properties["FailureType"].Value = air.tipoFalla;
+                    aeropuerto.Properties["OffShiftRule"].Value = "FinishWorkAlreadyStarted";
+                    aeropuerto.Properties["CountBetweenFailures"].Value = air.cantEntreFallas.ToString();
+                    aeropuerto.Properties["TimeToRepair"].Value = air.tiempoReparacion.ToString();
+
+                    IIntelligentObject mezclador = model.Facility.IntelligentObjects.CreateObject("Combiner", new FacilityLocation(air.x, air.y+30, air.z));
+                    String n = air.nombre + "C";
+                    mezclador.ObjectName = n;
+
+                    IIntelligentObject sourceAviones = model.Facility.IntelligentObjects.CreateObject("Source", new FacilityLocation(air.x, air.y + 30, air.z));
+                    n = air.nombre + "S";
+                    sourceAviones.ObjectName = n;
+                    sourceAviones.Properties[""];
+
+                    //nuevo.Properties[""].Value = air.tiempoPersonas;
+                    //nuevo.Properties[""].Value = air.tiempoAbordajeDespegue;
+                    //nuevo.Properties[""].Value = air.id;
+
 
 
                     //if (contador == 0)
@@ -218,8 +249,7 @@ namespace _MYS1_Proyecto_G1
                 experiment.ReplicationEnded += new EventHandler<ReplicationEndedEventArgs>(experiment_ReplicationEnded);
                 */
                 // Run Experiment, will call event handler methods when finished etc.
-                SimioProjectFactory.SaveProject(currentProject, "Nuevo.spfx", out warnings);
-                experiment.RunAsync();
+                SimioProjectFactory.SaveProject(currentProject, "Nuevo.spfx", out warnings);                
                 
             }
             else
