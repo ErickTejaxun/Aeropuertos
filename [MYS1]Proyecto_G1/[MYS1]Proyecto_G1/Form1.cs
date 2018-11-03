@@ -226,9 +226,9 @@ namespace _MYS1_Proyecto_G1
                     pista.Properties["InitialCapacity"].Value = air.capacidadPista.ToString();
                     ILinkObject path1 = model.Facility.IntelligentObjects.CreateLink("TimePath", source.Nodes[0], aeropuerto.Nodes[0], null) as ILinkObject;
                     path1.Properties["TravelTime"].Value = air.tiempoAbordajeDespegue.ToString();
+                    ILinkObject path = model.Facility.IntelligentObjects.CreateLink("Path", sourceAviones.Nodes[0], mezclador.Nodes[0], null) as ILinkObject;
+                    ILinkObject path3 = model.Facility.IntelligentObjects.CreateLink("Path", aeropuerto.Nodes[0], mezclador.Nodes[1], null) as ILinkObject;
 
-
-                    ILinkObject path = model.Facility.IntelligentObjects.CreateLink("Path", sourceAviones.Nodes[0], aeropuerto.Nodes[0], null) as ILinkObject;
 
 
 
